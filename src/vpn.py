@@ -9,7 +9,6 @@
 #
 
 """vpn.py (list|connect|disconnect|app) [<query>] [<name>]
-
 Usage:
     vpn.py list [<query>]
     vpn.py connect [-a|--all] [<name>]
@@ -17,7 +16,6 @@ Usage:
     vpn.py app <name>
     vpn.py conf [<query>]
     vpn.py -h
-
 Options:
     -a, --all   Apply action to all connections.
     -h, --help  Show this message and exit.
@@ -161,6 +159,15 @@ class VPNApp(object):
         connections = self.filter_connections(active=True)
         for c in connections:
             self.disconnect(c.name)
+
+    def connect_all(self):
+        """Connect all VPNs."""
+        connections = self.filter_connections(active=False)
+        for c in connection:
+            log.info(u'connecting "%s" ...', c.name)
+
+            cmd = self.program + ['connect', c.name]
+            run_command(cmd)            
 
     def filter_connections(self, name=None, active=True):
         """Return connections with matching name and state."""
@@ -414,6 +421,7 @@ def do_list(query):
     connections = app.connections
 
     active_connections = [c for c in connections if c.active]
+    inactive_connections = [c for c in connections if not c.active]
 
     if len(active_connections) > 0:
         connected = True
@@ -436,6 +444,16 @@ def do_list(query):
                 icon=ICON_CONNECTED,
             )
             it.setvar('action', 'disconnect')
+
+        if len(inactive_connections) > 1:
+            it = wf.add_item(
+                'Connect All',
+                'Action this item to open all connections',
+                arg='--all',
+                valid=True,
+                icon=ICON_DISCONNECTED,
+            )
+            it.setvar('action', 'connect')
 
         for con in active_connections:
             it = wf.add_item(
